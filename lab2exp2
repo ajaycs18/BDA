@@ -1,0 +1,47 @@
+cqlsh> create keyspace library with replication = {'class' : 'SimpleStrategy', 'replication_factor' : 1};
+cqlsh> use library;
+cqlsh:library> create table libraryinfo ( stud_id int PRIMARY KEY, stud_name varchar, book_name varchar, book_id int, issue_date date );
+cqlsh:library> create table libcount ( counter_val counter, stud_id int primary key );
+cqlsh:library> begin batch
+           ... insert into libraryinfo (stud_id, stud_name, book_name, book_id, issue_date) values (1, 'ajay', 'ds', 45, '2020-01-12');
+           ... insert into libraryinfo (stud_id, stud_name, book_name, book_id, issue_date) values (112, 'john', 'bda', 47, '2020-01-12');
+           ... apply batch;
+cqlsh:library> select * from libraryinfo ;
+
+ stud_id | book_id | book_name | issue_date | stud_name
+---------+---------+-----------+------------+-----------
+       1 |      45 |        ds | 2020-01-12 |      ajay
+     112 |      47 |       bda | 2020-01-12 |      john
+
+(2 rows)
+cqlsh:library> update libcount set counter_val = counter_val + 1 where stud_id = 1;
+cqlsh:library> update libcount set counter_val = counter_val + 1 where stud_id = 112;
+cqlsh:library> update libcount set counter_val = counter_val + 1 where stud_id = 112;
+cqlsh:library> select * from libcount;
+
+ stud_id | counter_val
+---------+-------------
+       1 |           1
+     112 |           2
+
+(2 rows)
+cqlsh:library> copy libraryinfo to 'libraryinfo.csv';
+Using 3 child processes
+
+Starting copy of library.libraryinfo with columns [stud_id, book_id, book_name, issue_date, stud_name].
+Processed: 2 rows; Rate:       7 rows/s; Avg. rate:       7 rows/s
+2 rows exported to 1 files in 0.286 seconds.
+cqlsh:library> create table libraryinfoimported ( stud_id int PRIMARY KEY, stud_name varchar, book_name varchar, book_id int, issue_date date );cqlsh:library> copy libraryinfoimported from 'libraryinfo.csv';Using 3 child processes
+cqlsh:library> copy libraryinfoimported from 'libraryinfo.csv';
+
+Starting copy of library.libraryinfoimported with columns [stud_id, book_id, book_name, issue_date, stud_name].
+Processed: 2 rows; Rate:       3 rows/s; Avg. rate:       5 rows/s
+2 rows imported from 1 files in 0.422 seconds (0 skipped).
+cqlsh:library> select * from libraryinfoimported;
+
+ stud_id | book_id | book_name | issue_date | stud_name
+---------+---------+-----------+------------+-----------
+       1 |      45 |        ds | 2020-01-12 |      ajay
+     112 |      47 |       bda | 2020-01-12 |      john
+
+(2 rows)

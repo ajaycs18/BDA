@@ -1,0 +1,313 @@
+cqlsh> CREATE KEYSPACE Employee with replication = {'class' : 'SimpleStrategy', 'replication_factor' : 1};
+cqlsh> DESCRIBE KEYSPACES;
+
+students       system_auth  project             employee     
+system_schema  system       system_distributed  system_traces
+
+cqlsh> USE employee;
+cqlsh:employee> CREATE TABLE employeeinfo (
+            ... emp_id int PRIMARY KEY,
+            ... emp_name varchar,
+            ... designation varchar,
+            ... date_of_joining date,
+            ... salary float,
+            ... dept_name varchar
+            ... );
+cqlsh:employee> DESCRIBE TABLES;
+
+employeeinfo
+
+cqlsh:employee> BEGIN BATCH
+            ... INSERT INTO employeeinfo (emp_id, emp_name, designation, date_of_joining, salary, dept_name) VALUES (1, 'ajay', 'intern', '2020-04-24', 67000, 'cloud');
+            ... INSERT INTO employeeinfo (emp_id, emp_name, designation, date_of_joining, salary, dept_name) VALUES (2, 'rahul', 'senior security architect', '2010-02-15', 675000, 'security');
+            ... INSERT INTO employeeinfo (emp_id, emp_name, designation, date_of_joining, salary, dept_name) VALUES (121, 'sam', 'university recruiter', '2016-02-15', 220000, 'hr');
+            ... APPLY BATCH;
+cqlsh:employee> SELECT * FROM employeeinfo;
+
+ emp_id | date_of_joining | dept_name | designation               | emp_name | salary
+--------+-----------------+-----------+---------------------------+----------+----------
+      1 |      2020-04-24 |     cloud |                    intern |     ajay |    67000
+      2 |      2010-02-15 |  security | senior security architect |    rahul | 6.75e+05
+    121 |      2016-02-15 |        hr |      university recruiter |      sam |  2.2e+05
+
+(3 rows)
+cqlsh:employee> UPDATE employeeinfo 
+            ... SET emp_name = 'john'
+            ... WHERE emp_id = 121;
+cqlsh:employee> SELECT * FROM employeeinfo ;
+
+ emp_id | date_of_joining | dept_name | designation               | emp_name | salary
+--------+-----------------+-----------+---------------------------+----------+----------
+      1 |      2020-04-24 |     cloud |                    intern |     ajay |    67000
+      2 |      2010-02-15 |  security | senior security architect |    rahul | 6.75e+05
+    121 |      2016-02-15 |        hr |      university recruiter |     john |  2.2e+05
+
+(3 rows)
+cqlsh:employee> SELECT * FROM employeeinfo
+            ... ORDER BY salary
+            ... ALLOW FILTERING;
+InvalidRequest: Error from server: code=2200 [Invalid query] message="ORDER BY is only supported when the partition key is restricted by an EQ or an IN."
+cqlsh:employee> SELECT * FROM employeeinfo
+            ... WHERE emp_id > 0
+            ... ORDER BY salary;
+InvalidRequest: Error from server: code=2200 [Invalid query] message="Cannot execute this query as it might involve data filtering and thus may have unpredictable performance. If you want to execute this query despite the performance unpredictability, use ALLOW FILTERING"
+cqlsh:employee> SELECT * FROM employeeinfo WHERE emp_id > 0 ORDER BY salary ALLOW FILTERING;
+InvalidRequest: Error from server: code=2200 [Invalid query] message="ORDER BY is only supported when the partition key is restricted by an EQ or an IN."
+cqlsh:employee> SELECT * FROM employeeinfo
+            ... WHERE emp_id IN (1, 2, 121)
+            ... ORDER BY salary
+            ... ALLOW FILTERING;
+InvalidRequest: Error from server: code=2200 [Invalid query] message="Order by is currently only supported on the clustered columns of the PRIMARY KEY, got salary"
+cqlsh:employee> CREATE INDEX salIndex ON employeeinfo (salary);
+cqlsh:employee> SELECT * FROM employeeinfo WHERE emp_id IN (1, 2, 121) ORDER BY salary ALLOW FILTERING;
+InvalidRequest: Error from server: code=2200 [Invalid query] message="Order by is currently only supported on the clustered columns of the PRIMARY KEY, got salary"
+cqlsh:employee> drop table employeeinfo;
+cqlsh:employee> describe tables;
+
+<empty>
+
+cqlsh:employee> CREATE TABLE employeeinfo ( emp_id int, emp_name varchar, designation varchar, date_of_joining date, salary float, dept_name varchar, PRIMARY KEY (emp_id, salary));
+cqlsh:employee> describe tables;
+
+employeeinfo
+
+cqlsh:employee> BEGIN BATCH INSERT INTO employeeinfo (emp_id, emp_name, designation, date_of_joining, salary, dept_name) VALUES (1, 'ajay', 'intern', '2020-04-24', 67000, 'cloud'); INSERT INTO employeeinfo (emp_id, emp_name, designation, date_of_joining, salary, dept_name) VALUES (2, 'rahul', 'senior security architect', '2010-02-15', 675000, 'security'); INSERT INTO employeeinfo (emp_id, emp_name, designation, date_of_joining, salary, dept_name) VALUES (121, 'sam', 'university recruiter', '2016-02-15', 220000, 'hr'); APPLY BATCH;
+cqlsh:employee> SELECT * FROM employeeinfo; emp_id | salary   | date_of_joining | dept_name | designation               | emp_name--------+----------+-----------------+-----------+---------------------------+----------
+      1 |    67000 |      2020-04-24 |     cloud |                    intern |     ajay
+      2 | 6.75e+05 |      2010-02-15 |  security | senior security architect |    rahul
+    121 |  2.2e+05 |      2016-02-15 |        hr |      university recruiter |      sam
+
+(3 rows)
+cqlsh:employee> UPDATE employeeinfo SET emp_name = 'john', dept_name = 'it' WHERE emp_id = 121 and salary = 220000;
+cqlsh:employee> SELECT * FROM employeeinfo;
+
+ emp_id | salary   | date_of_joining | dept_name | designation               | emp_name
+--------+----------+-----------------+-----------+---------------------------+----------
+      1 |    67000 |      2020-04-24 |     cloud |                    intern |     ajay
+      2 | 6.75e+05 |      2010-02-15 |  security | senior security architect |    rahul
+    121 |  2.2e+05 |      2016-02-15 |        it |      university recruiter |     john
+
+(3 rows)
+cqlsh:employee> SELECT * FROM employeeinfo WHERE emp_id IN (1, 2, 121) ORDER BY salary;InvalidRequest: Error from server: code=2200 [Invalid query] message="Cannot page queries with both ORDER BY and a IN restriction on the partition key; you must either remove the ORDER BY or the IN and sort client side, or disable paging for this query"cqlsh:employee> SELECT * FROM employeeinfo WHERE emp_id IN (1, 2, 121);
+
+ emp_id | salary   | date_of_joining | dept_name | designation               | emp_name
+--------+----------+-----------------+-----------+---------------------------+----------
+      1 |    67000 |      2020-04-24 |     cloud |                    intern |     ajay
+      2 | 6.75e+05 |      2010-02-15 |  security | senior security architect |    rahul
+    121 |  2.2e+05 |      2016-02-15 |        it |      university recruiter |     john
+
+(3 rows)
+cqlsh:employee> INSERT INTO employeeinfo (emp_id, emp_name, designation, date_of_joining, salary, dept_name) VALUES (1, 'rodney', 'secretary', '2020-04-23', 50000, 'cloud');cqlsh:employee> SELECT * FROM employeeinfo WHERE emp_id = 1 ORDER BY salary desc;
+ emp_id | salary | date_of_joining | dept_name | designation | emp_name
+--------+--------+-----------------+-----------+-------------+----------
+      1 |  67000 |      2020-04-24 |     cloud |      intern |     ajay
+      1 |  50000 |      2020-04-23 |     cloud |   secretary |   rodney
+
+(2 rows)
+cqlsh:employee> SELECT * FROM employeeinfo WHERE emp_id = 1 ORDER BY salary;
+
+ emp_id | salary | date_of_joining | dept_name | designation | emp_name
+--------+--------+-----------------+-----------+-------------+----------
+      1 |  50000 |      2020-04-23 |     cloud |   secretary |   rodney
+      1 |  67000 |      2020-04-24 |     cloud |      intern |     ajay
+
+(2 rows)
+cqlsh:employee> ALTER TABLE employeeinfo ADD projects varchar;
+cqlsh:employee> describe employeeinfo
+
+CREATE TABLE employee.employeeinfo (
+    emp_id int,
+    salary float,
+    date_of_joining date,
+    dept_name text,
+    designation text,
+    emp_name text,
+    projects text,
+    PRIMARY KEY (emp_id, salary)
+) WITH CLUSTERING ORDER BY (salary ASC)
+    AND bloom_filter_fp_chance = 0.01
+    AND caching = {'keys': 'ALL', 'rows_per_partition': 'NONE'}
+    AND comment = ''
+    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold': '32', 'min_threshold': '4'}
+    AND compression = {'chunk_length_in_kb': '64', 'class': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+    AND crc_check_chance = 1.0
+    AND dclocal_read_repair_chance = 0.1
+    AND default_time_to_live = 0
+    AND gc_grace_seconds = 864000
+    AND max_index_interval = 2048
+    AND memtable_flush_period_in_ms = 0
+    AND min_index_interval = 128
+    AND read_repair_chance = 0.0
+    AND speculative_retry = '99PERCENTILE';
+
+cqlsh:employee> BEGIN BATCH UPDATE employeeinfo SET projects = 'proj1' WHERE emp_id = 1 and salary = 50000; UPDATE employeeinfo SET projects = 'proj2' WHERE emp_id = 2 and salary = 675000; UPDATE employeeinfo SET projects = 'proj121' WHERE emp_id = 121 and salary = 220000; APPLY BATCH;
+cqlsh:employee> SELECT * FROM employeeinfo;
+ emp_id | salary   | date_of_joining | dept_name | designation               | emp_name | projects
+--------+----------+-----------------+-----------+---------------------------+----------+----------
+      1 |    50000 |      2020-04-23 |     cloud |                 secretary |   rodney |    proj1
+      1 |    67000 |      2020-04-24 |     cloud |                    intern |     ajay |     null
+      2 | 6.75e+05 |      2010-02-15 |  security | senior security architect |    rahul |    proj2
+    121 |  2.2e+05 |      2016-02-15 |        it |      university recruiter |     john |  proj121
+
+(4 rows)
+cqlsh:employee> UPDATE employeeinfo USING TTL 15 SET dept_name = 'hr' where emp_id = 1 and salary = 50000;
+cqlsh:employee> SELECT * FROM employeeinfo;
+
+ emp_id | salary   | date_of_joining | dept_name | designation               | emp_name | projects
+--------+----------+-----------------+-----------+---------------------------+----------+----------
+      1 |    50000 |      2020-04-23 |        hr |                 secretary |   rodney |    proj1
+      1 |    67000 |      2020-04-24 |     cloud |                    intern |     ajay |     null
+      2 | 6.75e+05 |      2010-02-15 |  security | senior security architect |    rahul |    proj2
+    121 |  2.2e+05 |      2016-02-15 |        it |      university recruiter |     john |  proj121
+
+(4 rows)
+cqlsh:employee> select ttl(dept_name) from employeeinfo where emp_id = 1 and salary = 50000;
+
+ ttl(dept_name)
+----------------
+           null
+
+(1 rows)
+cqlsh:employee> SELECT * FROM employeeinfo;
+
+ emp_id | salary   | date_of_joining | dept_name | designation               | emp_name | projects
+--------+----------+-----------------+-----------+---------------------------+----------+----------
+      1 |    50000 |      2020-04-23 |      null |                 secretary |   rodney |    proj1
+      1 |    67000 |      2020-04-24 |     cloud |                    intern |     ajay |     null
+      2 | 6.75e+05 |      2010-02-15 |  security | senior security architect |    rahul |    proj2
+    121 |  2.2e+05 |      2016-02-15 |        it |      university recruiter |     john |  proj121
+
+(4 rows)
+cqlsh:employee> UPDATE employeeinfo USING TTL 15 SET dept_name = 'hr' where emp_id = 1 and salary = 50000;
+cqlsh:employee> select ttl(dept_name) from employeeinfo where emp_id = 1 and salary = 50000;
+
+ ttl(dept_name)
+----------------
+             12
+
+(1 rows)
+cqlsh:employee> select ttl(dept_name) from employeeinfo where emp_id = 1 and salary = 50000;
+
+ ttl(dept_name)
+----------------
+              9
+
+(1 rows)
+cqlsh:employee> SELECT * FROM employeeinfo;
+
+ emp_id | salary   | date_of_joining | dept_name | designation               | emp_name | projects
+--------+----------+-----------------+-----------+---------------------------+----------+----------
+      1 |    50000 |      2020-04-23 |      null |                 secretary |   rodney |    proj1
+      1 |    67000 |      2020-04-24 |     cloud |                    intern |     ajay |     null
+      2 | 6.75e+05 |      2010-02-15 |  security | senior security architect |    rahul |    proj2
+    121 |  2.2e+05 |      2016-02-15 |        it |      university recruiter |     john |  proj121
+
+(4 rows)
+cqlsh:employee> describe employeeinfo
+
+CREATE TABLE employee.employeeinfo (
+    emp_id int,
+    salary float,
+    date_of_joining date,
+    dept_name text,
+    designation text,
+    emp_name text,
+    projects text,
+    PRIMARY KEY (emp_id, salary)
+) WITH CLUSTERING ORDER BY (salary ASC)
+    AND bloom_filter_fp_chance = 0.01
+    AND caching = {'keys': 'ALL', 'rows_per_partition': 'NONE'}
+    AND comment = ''
+    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold': '32', 'min_threshold': '4'}
+    AND compression = {'chunk_length_in_kb': '64', 'class': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+    AND crc_check_chance = 1.0
+    AND dclocal_read_repair_chance = 0.1
+    AND default_time_to_live = 0
+    AND gc_grace_seconds = 864000
+    AND max_index_interval = 2048
+    AND memtable_flush_period_in_ms = 0
+    AND min_index_interval = 128
+    AND read_repair_chance = 0.0
+    AND speculative_retry = '99PERCENTILE';
+
+cqlsh:employee> ALTER TABLE employeeinfo WITH default_time_to_live = 15;
+cqlsh:employee> describe employeeinfo
+
+CREATE TABLE employee.employeeinfo (
+    emp_id int,
+    salary float,
+    date_of_joining date,
+    dept_name text,
+    designation text,
+    emp_name text,
+    projects text,
+    PRIMARY KEY (emp_id, salary)
+) WITH CLUSTERING ORDER BY (salary ASC)
+    AND bloom_filter_fp_chance = 0.01
+    AND caching = {'keys': 'ALL', 'rows_per_partition': 'NONE'}
+    AND comment = ''
+    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold': '32', 'min_threshold': '4'}
+    AND compression = {'chunk_length_in_kb': '64', 'class': 'org.apache.cassandra.io.compress.LZ4Compressor'}
+    AND crc_check_chance = 1.0
+    AND dclocal_read_repair_chance = 0.1
+    AND default_time_to_live = 15
+    AND gc_grace_seconds = 864000
+    AND max_index_interval = 2048
+    AND memtable_flush_period_in_ms = 0
+    AND min_index_interval = 128
+    AND read_repair_chance = 0.0
+    AND speculative_retry = '99PERCENTILE';
+
+cqlsh:employee> SELECT * FROM employeeinfo;
+
+ emp_id | salary   | date_of_joining | dept_name | designation               | emp_name | projects
+--------+----------+-----------------+-----------+---------------------------+----------+----------
+      1 |    50000 |      2020-04-23 |      null |                 secretary |   rodney |    proj1
+      1 |    67000 |      2020-04-24 |     cloud |                    intern |     ajay |     null
+      2 | 6.75e+05 |      2010-02-15 |  security | senior security architect |    rahul |    proj2
+    121 |  2.2e+05 |      2016-02-15 |        it |      university recruiter |     john |  proj121
+
+(4 rows)
+cqlsh:employee> BEGIN BATCH UPDATE employeeinfo SET projects = 'proj1' WHERE emp_id = 1 and salary = 50000; UPDATE employeeinfo SET projects = 'proj2' WHERE emp_id = 2 and salary = 675000; UPDATE employeeinfo SET projects = 'proj121' WHERE emp_id = 121 and salary = 220000; APPLY BATCH;
+cqlsh:employee> SELECT * FROM employeeinfo;
+ emp_id | salary   | date_of_joining | dept_name | designation               | emp_name | projects
+--------+----------+-----------------+-----------+---------------------------+----------+----------
+      1 |    50000 |      2020-04-23 |      null |                 secretary |   rodney |    proj1
+      1 |    67000 |      2020-04-24 |     cloud |                    intern |     ajay |     null
+      2 | 6.75e+05 |      2010-02-15 |  security | senior security architect |    rahul |    proj2
+    121 |  2.2e+05 |      2016-02-15 |        it |      university recruiter |     john |  proj121
+
+(4 rows)
+cqlsh:employee> SELECT * FROM employeeinfo;
+
+ emp_id | salary   | date_of_joining | dept_name | designation               | emp_name | projects
+--------+----------+-----------------+-----------+---------------------------+----------+----------
+      1 |    50000 |      2020-04-23 |      null |                 secretary |   rodney |     null
+      1 |    67000 |      2020-04-24 |     cloud |                    intern |     ajay |     null
+      2 | 6.75e+05 |      2010-02-15 |  security | senior security architect |    rahul |     null
+    121 |  2.2e+05 |      2016-02-15 |        it |      university recruiter |     john |     null
+
+(4 rows)
+cqlsh:employee> insert into employeeinfo (emp_id, salary, dept_name) values (5, 56795, 'hr');
+cqlsh:employee> SELECT * FROM employeeinfo;
+
+ emp_id | salary   | date_of_joining | dept_name | designation               | emp_name | projects
+--------+----------+-----------------+-----------+---------------------------+----------+----------
+      5 |    56795 |            null |        hr |                      null |     null |     null
+      1 |    50000 |      2020-04-23 |      null |                 secretary |   rodney |     null
+      1 |    67000 |      2020-04-24 |     cloud |                    intern |     ajay |     null
+      2 | 6.75e+05 |      2010-02-15 |  security | senior security architect |    rahul |     null
+    121 |  2.2e+05 |      2016-02-15 |        it |      university recruiter |     john |     null
+
+(5 rows)
+cqlsh:employee> SELECT * FROM employeeinfo;
+
+ emp_id | salary   | date_of_joining | dept_name | designation               | emp_name | projects
+--------+----------+-----------------+-----------+---------------------------+----------+----------
+      1 |    50000 |      2020-04-23 |      null |                 secretary |   rodney |     null
+      1 |    67000 |      2020-04-24 |     cloud |                    intern |     ajay |     null
+      2 | 6.75e+05 |      2010-02-15 |  security | senior security architect |    rahul |     null
+    121 |  2.2e+05 |      2016-02-15 |        it |      university recruiter |     john |     null
+
+(4 rows)
+cqlsh:employee> exit
