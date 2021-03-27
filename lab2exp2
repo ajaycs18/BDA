@@ -1,47 +1,41 @@
 cqlsh> create keyspace library with replication = {'class' : 'SimpleStrategy', 'replication_factor' : 1};
 cqlsh> use library;
-cqlsh:library> create table libraryinfo ( stud_id int PRIMARY KEY, stud_name varchar, book_name varchar, book_id int, issue_date date );
-cqlsh:library> create table libcount ( counter_val counter, stud_id int primary key );
-cqlsh:library> begin batch
-           ... insert into libraryinfo (stud_id, stud_name, book_name, book_id, issue_date) values (1, 'ajay', 'ds', 45, '2020-01-12');
-           ... insert into libraryinfo (stud_id, stud_name, book_name, book_id, issue_date) values (112, 'john', 'bda', 47, '2020-01-12');
-           ... apply batch;
-cqlsh:library> select * from libraryinfo ;
+cqlsh:library> create table libraryinfocount ( stud_id int, counter_val counter, stud_name varchar, book_name varchar, book_id int, issue_date date , primary key(stud_id, stud_name, book_name, book_id, issue_date));
+cqlsh:library> update libraryinfocount set counter_val = counter_val + 2 where stud_id = 112 and stud_name = 'john' and book_name = 'bda' and book_id = 47 and issue_date = '2020-01-12';
+cqlsh:library> select * from libraryinfocount;
 
- stud_id | book_id | book_name | issue_date | stud_name
----------+---------+-----------+------------+-----------
-       1 |      45 |        ds | 2020-01-12 |      ajay
-     112 |      47 |       bda | 2020-01-12 |      john
+ stud_id | stud_name | book_name | book_id | issue_date | counter_val
+---------+-----------+-----------+---------+------------+-------------
+     112 |      john |       bda |      47 | 2020-01-12 |           2
 
-(2 rows)
-cqlsh:library> update libcount set counter_val = counter_val + 1 where stud_id = 1;
-cqlsh:library> update libcount set counter_val = counter_val + 1 where stud_id = 112;
-cqlsh:library> update libcount set counter_val = counter_val + 1 where stud_id = 112;
-cqlsh:library> select * from libcount;
+(1 rows)
+cqlsh:library> update libraryinfocount set counter_val = counter_val + 1 where stud_id = 1 and stud_name = 'ajay' and book_name = 'ds' and book_id = 40 and issue_date = '2020-01-24';
+cqlsh:library> select * from libraryinfocount;
 
- stud_id | counter_val
----------+-------------
-       1 |           1
-     112 |           2
+ stud_id | stud_name | book_name | book_id | issue_date | counter_val
+---------+-----------+-----------+---------+------------+-------------
+       1 |      ajay |        ds |      40 | 2020-01-24 |           1
+     112 |      john |       bda |      47 | 2020-01-12 |           2
 
 (2 rows)
-cqlsh:library> copy libraryinfo to 'libraryinfo.csv';
+cqlsh:library> copy libraryinfocount to 'data.csv';
 Using 3 child processes
 
-Starting copy of library.libraryinfo with columns [stud_id, book_id, book_name, issue_date, stud_name].
-Processed: 2 rows; Rate:       7 rows/s; Avg. rate:       7 rows/s
-2 rows exported to 1 files in 0.286 seconds.
-cqlsh:library> create table libraryinfoimported ( stud_id int PRIMARY KEY, stud_name varchar, book_name varchar, book_id int, issue_date date );cqlsh:library> copy libraryinfoimported from 'libraryinfo.csv';Using 3 child processes
-cqlsh:library> copy libraryinfoimported from 'libraryinfo.csv';
+Starting copy of library.libraryinfocount with columns [stud_id, stud_name, book_name, book_id, issue_date, counter_val].
+Processed: 2 rows; Rate:       4 rows/s; Avg. rate:       7 rows/s
+2 rows exported to 1 files in 0.313 seconds.
+cqlsh:library> create table libraryinfocountimport ( stud_id int, counter_val counter, stud_name varchar, book_name varchar, book_id int, issue_date date , primary key(stud_id, stud_name, book_name, book_id, issue_date));
+cqlsh:library> copy libraryinfocountimport from 'data.csv';Using 3 child processes
 
-Starting copy of library.libraryinfoimported with columns [stud_id, book_id, book_name, issue_date, stud_name].
+Starting copy of library.libraryinfocountimport with columns [stud_id, stud_name, book_name, book_id, issue_date, counter_val].
 Processed: 2 rows; Rate:       3 rows/s; Avg. rate:       5 rows/s
-2 rows imported from 1 files in 0.422 seconds (0 skipped).
-cqlsh:library> select * from libraryinfoimported;
+2 rows imported from 1 files in 0.421 seconds (0 skipped).
+cqlsh:library> select * from libraryinfocountimport;
 
- stud_id | book_id | book_name | issue_date | stud_name
----------+---------+-----------+------------+-----------
-       1 |      45 |        ds | 2020-01-12 |      ajay
-     112 |      47 |       bda | 2020-01-12 |      john
+ stud_id | stud_name | book_name | book_id | issue_date | counter_val
+---------+-----------+-----------+---------+------------+-------------
+       1 |      ajay |        ds |      40 | 2020-01-24 |           1
+     112 |      john |       bda |      47 | 2020-01-12 |           2
 
 (2 rows)
+cqlsh:library> exit
