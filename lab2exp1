@@ -43,24 +43,6 @@ cqlsh:employee> SELECT * FROM employeeinfo ;
     121 |      2016-02-15 |        hr |      university recruiter |     john |  2.2e+05
 
 (3 rows)
-cqlsh:employee> SELECT * FROM employeeinfo
-            ... ORDER BY salary
-            ... ALLOW FILTERING;
-InvalidRequest: Error from server: code=2200 [Invalid query] message="ORDER BY is only supported when the partition key is restricted by an EQ or an IN."
-cqlsh:employee> SELECT * FROM employeeinfo
-            ... WHERE emp_id > 0
-            ... ORDER BY salary;
-InvalidRequest: Error from server: code=2200 [Invalid query] message="Cannot execute this query as it might involve data filtering and thus may have unpredictable performance. If you want to execute this query despite the performance unpredictability, use ALLOW FILTERING"
-cqlsh:employee> SELECT * FROM employeeinfo WHERE emp_id > 0 ORDER BY salary ALLOW FILTERING;
-InvalidRequest: Error from server: code=2200 [Invalid query] message="ORDER BY is only supported when the partition key is restricted by an EQ or an IN."
-cqlsh:employee> SELECT * FROM employeeinfo
-            ... WHERE emp_id IN (1, 2, 121)
-            ... ORDER BY salary
-            ... ALLOW FILTERING;
-InvalidRequest: Error from server: code=2200 [Invalid query] message="Order by is currently only supported on the clustered columns of the PRIMARY KEY, got salary"
-cqlsh:employee> CREATE INDEX salIndex ON employeeinfo (salary);
-cqlsh:employee> SELECT * FROM employeeinfo WHERE emp_id IN (1, 2, 121) ORDER BY salary ALLOW FILTERING;
-InvalidRequest: Error from server: code=2200 [Invalid query] message="Order by is currently only supported on the clustered columns of the PRIMARY KEY, got salary"
 cqlsh:employee> drop table employeeinfo;
 cqlsh:employee> describe tables;
 
