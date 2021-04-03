@@ -1,0 +1,216 @@
+codespace ➜ / $ mongo "mongodb+srv://cluster0.ipckm.mongodb.net/myFirstDatabase" --username ajay
+MongoDB shell version v3.6.8
+Enter password: 
+connecting to: mongodb://127.0.0.1:27017/mongo
+8> db.serverStatus().host
+cluster0-shard-00-02.ipckm.mongodb.net:27017
+9> db.serverStatus()
+{
+        "host" : "cluster0-shard-00-02.ipckm.mongodb.net:27017",
+        "version" : "4.4.4",
+        "process" : "mongod",
+        "pid" : NumberLong(2548),
+        "uptime" : 4858,
+        "uptimeMillis" : NumberLong(4858278),
+        "uptimeEstimate" : NumberLong(4858),
+        "localTime" : ISODate("2021-04-03T06:41:15.827Z"),
+        "asserts" : {
+                "regular" : 0,
+                "warning" : 0,
+                "msg" : 0,
+                "user" : 0,
+                "rollovers" : 0
+        },
+        "connections" : {
+                "current" : 3,
+                "available" : 497,
+                "totalCreated" : NumberLong(13)
+        },
+        "extra_info" : {
+                "note" : "fields vary by platform",
+                "page_faults" : 0
+        },
+        "network" : {
+                "bytesIn" : NumberLong(32859),
+                "bytesOut" : NumberLong(201751),
+                "numRequests" : NumberLong(169)
+        },
+        "opcounters" : {
+                "insert" : NumberLong(1),
+                "query" : NumberLong(6),
+                "update" : NumberLong(0),
+                "delete" : NumberLong(1),
+                "getmore" : NumberLong(0),
+                "command" : NumberLong(160)
+        },
+        "opcountersRepl" : {
+                "insert" : 0,
+                "query" : 0,
+                "update" : 0,
+                "delete" : 0,
+                "getmore" : 0,
+                "command" : 0
+        },
+        "repl" : {
+                "topologyVersion" : {
+                        "processId" : ObjectId("6067fb118ceaa54acdb65854"),
+                        "counter" : NumberLong(6)
+                },
+                "hosts" : [
+                        "cluster0-shard-00-00.ipckm.mongodb.net:27017",
+                        "cluster0-shard-00-01.ipckm.mongodb.net:27017",
+                        "cluster0-shard-00-02.ipckm.mongodb.net:27017"
+                ],
+                "setName" : "atlas-f2t9d3-shard-0",
+                "setVersion" : 1,
+                "ismaster" : true,
+                "secondary" : false,
+                "primary" : "cluster0-shard-00-02.ipckm.mongodb.net:27017",
+                "tags" : {
+                        "region" : "AP_SOUTH_1",
+                        "provider" : "AWS",
+                        "nodeType" : "ELECTABLE",
+                        "workloadType" : "OPERATIONAL"
+                },
+                "me" : "cluster0-shard-00-02.ipckm.mongodb.net:27017",
+                "electionId" : ObjectId("7fffffff0000000000000003"),
+                "lastWrite" : {
+                        "opTime" : {
+                                "ts" : Timestamp(1617432075, 2),
+                                "t" : NumberLong(3)
+                        },
+                        "lastWriteDate" : ISODate("2021-04-03T06:41:15Z"),
+                        "majorityOpTime" : {
+                                "ts" : Timestamp(1617432075, 2),
+                                "t" : NumberLong(3)
+                        },
+                        "majorityWriteDate" : ISODate("2021-04-03T06:41:15Z")
+                },
+                "rbid" : 1
+        },
+        "storageEngine" : {
+                "name" : "wiredTiger",
+                "supportsCommittedReads" : true,
+                "oldestRequiredTimestampForCrashRecovery" : Timestamp(1617432058, 2),
+                "supportsPendingDrops" : true,
+ajay:mongodb> db.students.insertMany([
+... {
+... roll: 1,
+ajay:mongodb> db.students.updateOne(
+... { roll: 10 },
+... { $set: { email: 'jason@bmsce.com' } }
+... )
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+ajay:mongodb> db.students.find({roll: 10});
+{ "_id" : ObjectId("60680f5120d4413a4eac07f6"), "roll" : 10, "age" : 21, "contact" : 874532157, "email" : "jason@bmsce.com" }
+ajay:mongodb> db.students.insertOne({ roll: 11, name: "ABC", age: 22, contact: 12547859, email: 'arav@bmsce.com' })
+{
+        "acknowledged" : true,
+        "insertedId" : ObjectId("6068109520d4413a4eac07f7")
+}
+ajay:mongodb> db.students.updateOne(
+... { roll: 11 },
+... { $set: { name: "FEM" } }
+... )
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+ajay:mongodb> db.students.find({roll: 11});
+{ "_id" : ObjectId("6068109520d4413a4eac07f7"), "roll" : 11, "name" : "FEM", "age" : 22, "contact" : 12547859, "email" : "arav@bmsce.com" }
+ajay:mongodb> db
+myFirstDatabase
+ajay:mongodb> show dbs
+admin            0.000GB
+local            3.807GB
+myFirstDatabase  0.000GB
+ajay:mongodb> exit
+bye
+codespace ➜ / $ sudo mongoexport --uri="mongodb+srv://ajay@cluster0.ipckm.mongodb.net/myFirstDatabase" --collection=students --out=export.json --forceTableScan
+Enter password:
+
+2021-04-03T07:14:56.326+0000    connected to: localhost
+2021-04-03T07:14:56.382+0000    exported 4 records
+codespace ➜ / $ ls
+bin   conda.gpg  etc          get-pip.py  home  lib32  libx32  mnt  proc  run   srv  tmp  var     workspaces
+boot  dev        export.json  go          lib   lib64  media   opt  root  sbin  sys  usr  vscode
+codespace ➜ / $ mv export.json /workspaces/BDA
+mv: cannot remove 'export.json': Permission denied
+codespace ➜ / $ sudo mv export.json /workspaces/BDA
+codespace ➜ / $ cd /workspaces/BDA/
+codespace ➜ /workspaces/BDA (main ✗) $ ls
+export.json  lab1  lab2exp1  lab2exp2
+codespace ➜ /workspaces/BDA (main ✗) $ cat export.json 
+{"_id":{"$oid":"60680ef320d4413a4eac07f4"},"roll":1.0,"age":20.0,"contact":9.58463215e+08,"email":"ajay@bmsce.com"}
+{"_id":{"$oid":"60680ef320d4413a4eac07f5"},"roll":2.0,"age":20.0,"contact":8.74596532e+08,"email":"akshay@bmsce.com"}
+{"_id":{"$oid":"60680f5120d4413a4eac07f6"},"roll":10.0,"age":21.0,"contact":8.74532157e+08,"email":"jason@bmsce.com"}
+{"_id":{"$oid":"6068109520d4413a4eac07f7"},"roll":11.0,"name":"FEM","age":22.0,"contact":1.2547859e+07,"email":"arav@bmsce.com"}
+codespace ➜ /workspaces/BDA (main ✗) $ mongo "mongodb+srv://ajay@cluster0.ipckm.mongodb.net"
+MongoDB shell version v3.6.8
+Enter password: 
+connecting to: mongodb+srv://cluster0.ipckm.mongodb.net
+2021-04-03T07:16:05.753+0000 I NETWORK  [thread1] Starting new replica set monitor for atlas-f2t9d3-shard-0/cluster0-shard-00-02.ipckm.mongodb.net.:27017,cluster0-shard-00-01.ipckm.mongodb.net.:27017,cluster0-shard-00-00.ipckm.mongodb.net.:27017
+2021-04-03T07:16:05.954+0000 I NETWORK  [ReplicaSetMonitor-TaskExecutor-0] Successfully connected to cluster0-shard-00-01.ipckm.mongodb.net.:27017 (1 connections now open to cluster0-shard-00-01.ipckm.mongodb.net.:27017 with a 5 second timeout)
+2021-04-03T07:16:05.969+0000 I NETWORK  [thread1] Successfully connected to cluster0-shard-00-02.ipckm.mongodb.net.:27017 (1 connections now open to cluster0-shard-00-02.ipckm.mongodb.net.:27017 with a 5 second timeout)
+2021-04-03T07:16:06.025+0000 I NETWORK  [thread1] changing hosts to atlas-f2t9d3-shard-0/cluster0-shard-00-00.ipckm.mongodb.net:27017,cluster0-shard-00-01.ipckm.mongodb.net:27017,cluster0-shard-00-02.ipckm.mongodb.net:27017 from atlas-f2t9d3-shard-0/cluster0-shard-00-00.ipckm.mongodb.net.:27017,cluster0-shard-00-01.ipckm.mongodb.net.:27017,cluster0-shard-00-02.ipckm.mongodb.net.:27017
+2021-04-03T07:16:06.183+0000 I NETWORK  [ReplicaSetMonitor-TaskExecutor-0] Successfully connected to cluster0-shard-00-02.ipckm.mongodb.net:27017 (1 connections now open to cluster0-shard-00-02.ipckm.mongodb.net:27017 with a 5 second timeout)
+2021-04-03T07:16:06.226+0000 I NETWORK  [thread1] Successfully connected to cluster0-shard-00-00.ipckm.mongodb.net:27017 (1 connections now open to cluster0-shard-00-00.ipckm.mongodb.net:27017 with a 5 second timeout)
+2021-04-03T07:16:06.411+0000 I NETWORK  [ReplicaSetMonitor-TaskExecutor-0] Successfully connected to cluster0-shard-00-01.ipckm.mongodb.net:27017 (1 connections now open to cluster0-shard-00-01.ipckm.mongodb.net:27017 with a 5 second timeout)
+Implicit session: session { "id" : UUID("71bfda09-1bae-4022-837e-8794ba2574cb") }
+MongoDB server version: 4.4.4
+WARNING: shell and server versions do not match
+MongoDB Enterprise atlas-f2t9d3-shard-0:PRIMARY> use newdb
+switched to db newdb
+MongoDB Enterprise atlas-f2t9d3-shard-0:PRIMARY> db
+newdb
+MongoDB Enterprise atlas-f2t9d3-shard-0:PRIMARY> show dbs
+admin            0.000GB
+local            3.807GB
+myFirstDatabase  0.000GB
+MongoDB Enterprise atlas-f2t9d3-shard-0:PRIMARY> exit
+bye
+codespace ➜ /workspaces/BDA (main ✗) $ sudo mongoimport --uri="mongodb+srv://ajay@cluster0.ipckm.mongodb.net/newdb" --collection=students --file=export.json
+Enter password:
+
+2021-04-03T07:18:50.768+0000    connected to: localhost
+2021-04-03T07:18:50.902+0000    imported 4 documents
+codespace ➜ /workspaces/BDA (main ✗) $ mongo "mongodb+srv://ajay@cluster0.ipckm.mongodb.net"MongoDB shell version v3.6.8
+Enter password: 
+connecting to: mongodb+srv://cluster0.ipckm.mongodb.net
+2021-04-03T07:19:22.261+0000 I NETWORK  [thread1] Starting new replica set monitor for atlas-f2t9d3-shard-0/cluster0-shard-00-02.ipckm.mongodb.net.:27017,cluster0-shard-00-01.ipckm.mongodb.net.:27017,cluster0-shard-00-00.ipckm.mongodb.net.:27017
+2021-04-03T07:19:22.439+0000 I NETWORK  [ReplicaSetMonitor-TaskExecutor-0] Successfully connected to cluster0-shard-00-00.ipckm.mongodb.net.:27017 (1 connections now open to cluster0-shard-00-00.ipckm.mongodb.net.:27017 with a 5 second timeout)
+2021-04-03T07:19:22.467+0000 I NETWORK  [thread1] Successfully connected to cluster0-shard-00-01.ipckm.mongodb.net.:27017 (1 connections now open to cluster0-shard-00-01.ipckm.mongodb.net.:27017 with a 5 second timeout)
+2021-04-03T07:19:22.672+0000 I NETWORK  [ReplicaSetMonitor-TaskExecutor-0] Successfully connected to cluster0-shard-00-02.ipckm.mongodb.net:27017 (1 connections now open to cluster0-shard-00-02.ipckm.mongodb.net:27017 with a 5 second timeout)
+2021-04-03T07:19:22.710+0000 I NETWORK  [thread1] Successfully connected to cluster0-shard-00-02.ipckm.mongodb.net.:27017 (1 connections now open to cluster0-shard-00-02.ipckm.mongodb.net.:27017 with a 5 second timeout)
+2021-04-03T07:19:22.728+0000 I NETWORK  [ReplicaSetMonitor-TaskExecutor-0] changing hosts to atlas-f2t9d3-shard-0/cluster0-shard-00-00.ipckm.mongodb.net:27017,cluster0-shard-00-01.ipckm.mongodb.net:27017,cluster0-shard-00-02.ipckm.mongodb.net:27017 from atlas-f2t9d3-shard-0/cluster0-shard-00-00.ipckm.mongodb.net.:27017,cluster0-shard-00-01.ipckm.mongodb.net.:27017,cluster0-shard-00-02.ipckm.mongodb.net.:27017
+2021-04-03T07:19:22.897+0000 I NETWORK  [ReplicaSetMonitor-TaskExecutor-0] Successfully connected to cluster0-shard-00-01.ipckm.mongodb.net:27017 (1 connections now open to cluster0-shard-00-01.ipckm.mongodb.net:27017 with a 5 second timeout)
+2021-04-03T07:19:22.959+0000 I NETWORK  [thread1] Successfully connected to cluster0-shard-00-00.ipckm.mongodb.net:27017 (1 connections now open to cluster0-shard-00-00.ipckm.mongodb.net:27017 with a 5 second timeout)
+Implicit session: session { "id" : UUID("6ede1915-50ce-4d4b-a778-b95c9e726885") }
+MongoDB server version: 4.4.4
+WARNING: shell and server versions do not match
+MongoDB Enterprise atlas-f2t9d3-shard-0:PRIMARY> show dbs
+admin            0.000GB
+local            3.807GB
+myFirstDatabase  0.000GB
+newdb            0.000GB
+MongoDB Enterprise atlas-f2t9d3-shard-0:PRIMARY> use newdb
+switched to db newdb
+MongoDB Enterprise atlas-f2t9d3-shard-0:PRIMARY> db
+newdb
+MongoDB Enterprise atlas-f2t9d3-shard-0:PRIMARY> db.students.find();
+{ "_id" : ObjectId("60680ef320d4413a4eac07f4"), "roll" : 1, "age" : 20, "contact" : 958463215, "email" : "ajay@bmsce.com" }
+{ "_id" : ObjectId("60680f5120d4413a4eac07f6"), "roll" : 10, "age" : 21, "contact" : 874532157, "email" : "jason@bmsce.com" }
+{ "_id" : ObjectId("60680ef320d4413a4eac07f5"), "roll" : 2, "age" : 20, "contact" : 874596532, "email" : "akshay@bmsce.com" }
+{ "_id" : ObjectId("6068109520d4413a4eac07f7"), "roll" : 11, "name" : "FEM", "age" : 22, "contact" : 12547859, "email" : "arav@bmsce.com" }
+MongoDB Enterprise atlas-f2t9d3-shard-0:PRIMARY> show collections
+students
+MongoDB Enterprise atlas-f2t9d3-shard-0:PRIMARY> use myFirstDatabase
+switched to db myFirstDatabase
+MongoDB Enterprise atlas-f2t9d3-shard-0:PRIMARY> db
+myFirstDatabase
+MongoDB Enterprise atlas-f2t9d3-shard-0:PRIMARY> db.students.drop()
+true
+MongoDB Enterprise atlas-f2t9d3-shard-0:PRIMARY> show collections
+MongoDB Enterprise atlas-f2t9d3-shard-0:PRIMARY> use newdb
+switched to db newdb
+MongoDB Enterprise atlas-f2t9d3-shard-0:PRIMARY> show collections
+students
+MongoDB Enterprise atlas-f2t9d3-shard-0:PRIMARY> exit
+bye
