@@ -1,0 +1,4 @@
+{"_id":{"$oid":"60680ef320d4413a4eac07f4"},"roll":1.0,"age":20.0,"contact":9.58463215e+08,"email":"ajay@bmsce.com"}
+{"_id":{"$oid":"60680ef320d4413a4eac07f5"},"roll":2.0,"age":20.0,"contact":8.74596532e+08,"email":"akshay@bmsce.com"}
+{"_id":{"$oid":"60680f5120d4413a4eac07f6"},"roll":10.0,"age":21.0,"contact":8.74532157e+08,"email":"jason@bmsce.com"}
+{"_id":{"$oid":"6068109520d4413a4eac07f7"},"roll":11.0,"name":"FEM","age":22.0,"contact":1.2547859e+07,"email":"arav@bmsce.com"}
